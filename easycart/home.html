@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAYAVARDHAN PATIL</title>
+    <link rel="stylesheet" href="index.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .animated {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .slide-in {
+            animation: slideInLeft 1s ease-in-out;
+        }
+
+        .pulse-button:hover {
+            animation: pulse 0.5s ease-in-out infinite;
+        }
+    </style>
+
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <h1>EASYCART</h1>
+            <ul>
+                <li><a href="#">Home</a></li>
+                
+                <li><a href="https://www.instagram.com/patil_vardhan_49/" target="_blank">Contact</a></li>
+                <li><a href="login.html"  onclick="login()">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+    <section>
+        <h2 class="slide-in">Welcome to EasyCart</h2>
+        <p class="slide-in">Feel free to Shop Anything on EasyCart</p>
+        <img src="easycart.jpg" alt="Beautiful Landscape
+        " class="animated" style="max-width: 100%; border-radius: 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);">
+        <br>
+        <button onclick="handleGetStarted()">Get Started</button>
+    </section>
+    <script>
+      function handleGetStarted() {
+          if(confirm("Welcome! Let's get started."));{
+          window.location.href = "Z easycart/index.html";
+          }
+      }
+      function login() {
+        if(confirm("Login page!!")){
+        window.loctaion.href = "log.html";
+        }
+      }
+  </script>
+  
+</body>
+</html>
