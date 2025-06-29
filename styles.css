@@ -41,6 +41,7 @@ nav ul li a {
 nav ul li a:hover {
   background-color: #ff6600;
   border-radius: 5px;
+  transition: 0.5s;
 }
 
 /* Banner Section */
@@ -75,6 +76,7 @@ nav ul li a:hover {
 
 .shop-now:hover {
   background-color: #cc5500;
+  transition: 0.5s;
 }
 
 /* Featured Products */
@@ -127,6 +129,7 @@ nav ul li a:hover {
 
 .product button:hover {
   background-color: #cc5500;
+  transition: 0.5s;
 }
 
 /* Footer */
@@ -188,6 +191,7 @@ footer {
 
 .add-to-cart:hover {
   background-color: #cc5500;
+  transition: 0.5s;
 }
 /* Cart Page */
 .cart {
@@ -280,6 +284,7 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background-color: #cc5500;
+  transition: 0.5s;
 }
 #checkout-button {
   background-color: green;
@@ -293,6 +298,7 @@ button[type="submit"]:hover {
 
 #checkout-button:hover {
   background-color: darkgreen;
+  transition: 0.5s;
 }
 /* Admin Page */
 section {
@@ -324,6 +330,7 @@ button {
 
 button:hover {
   background-color: #cc5500;
+  transition: 0.5s;
 }
 
 table {
@@ -350,6 +357,7 @@ nav ul li a[href="admin.html"] {
 
 nav ul li a[href="admin.html"]:hover {
   background-color: #ff6600;
+  transition: 0.5s;
 }
 
 
@@ -366,6 +374,7 @@ nav ul li a[href="admin.html"]:hover {
 
 .home-button:hover {
   background-color: #ff6600;
+  transition: 0.5s;
 }
 
 .ADMIN {
