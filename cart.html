@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - EasyCart</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<script src="cart.js"></script>
+<body>
+    <header>
+        <nav>
+            <div class="logo">EasyCart</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="products.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="log.html">Login</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="cart">
+        <h2>Your Shopping Cart</h2>
+        <div class="cart-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-items">
+                  
+                </tbody>
+            </table>
+            <h3>Total: <span id="total-price">0.00</span></h3>
+            <button id="clear-cart">Clear Cart</button>
+            <a href="checkout.html"><button id="checkout-button">Place Order</button></a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 EasyCart. All rights reserved.</p>
+    </footer>
+
+    <script src="cart.js"></script>
+</body>
+</html>

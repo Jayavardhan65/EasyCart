@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - EasyCart</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<script src="script.js"></script>
+<body>
+    <header>
+        <nav>
+            <div class="logo">EasyCart</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="admin.html">Admin</a></li>
+                <li><a href="log.html">Login</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="product-list">
+        <h2>Shop Our Products</h2>
+        <div id="product-container"></div>
+        <div class="product-container">
+            <div class="product">
+                <img src="images/product1.jpg" alt="Product 1">
+                <h3>Product 1</h3>
+                <p>&#8377;25.99</p>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="images/product2.jpg" alt="Product 2">
+                <h3>Product 2</h3>
+                <p>&#8377;30.99</p>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+            <div class="product">
+                <img src="images/product3.jpg" alt="Product 3">
+                <h3>Product 3</h3>
+                <p>&#8377;18.50</p>
+                <button class="add-to-cart">Add to Cart</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 EasyCart. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            let products = JSON.parse(localStorage.getItem("products")) || [];
+            const productContainer = document.getElementById("product-container");
+        
+            products.forEach(product => {
+                let div = document.createElement("div");
+                div.classList.add("product");
+                div.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" width="100">
+                    <h3>${product.name}</h3>
+                    <p>${product.price}</p>
+                    <button onclick="addToCart('${product.name}', '${product.price}', '${product.image}')">Add to Cart</button>
+                `;
+                productContainer.appendChild(div);
+            });
+        });
+        
+        function addToCart(name, price, image) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            cart.push({ name, price, image });
+            localStorage.setItem("cart", JSON.stringify(cart));
+            alert("Added to cart!");
+        }
+        </script>
+        
+</body>
+</html>
