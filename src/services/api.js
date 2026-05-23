@@ -28,6 +28,9 @@ export const deleteProduct = (id) =>
 export const placeOrder = (data) =>
   fetch(`${BASE}/orders`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json())
 
+export const fetchMyOrders = () =>
+  fetch(`${BASE}/orders/my`, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('user_token')}` } }).then(r => r.json())
+
 export const fetchOrders = () =>
   fetch(`${BASE}/orders`, { headers: headers(true) }).then(r => r.json())
 
