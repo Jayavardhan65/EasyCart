@@ -1,18 +1,28 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import User from '../models/User.js'
 import authMiddleware from '../middleware/auth.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const router = express.Router()
-const resend = new Resend(process.env.RESEND_API_KEY)
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  family: 4,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+})
 
 const sendOTP = async (email, otp) => {
-  await resend.emails.send({
-    from: 'EasyCart <onboarding@resend.dev>',
+  await transporter.sendMail({
+    from: `"EasyCart" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'Your EasyCart OTP',
     html: `<div style="font-family:sans-serif;padding:20px">
@@ -24,7 +34,6 @@ const sendOTP = async (email, otp) => {
   })
 }
 
-// Register
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body
@@ -52,7 +61,6 @@ router.post('/register', async (req, res) => {
   }
 })
 
-// Verify OTP
 router.post('/verify-otp', async (req, res) => {
   try {
     const { email, otp } = req.body
@@ -73,7 +81,6 @@ router.post('/verify-otp', async (req, res) => {
   }
 })
 
-// Login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
@@ -91,7 +98,6 @@ router.post('/login', async (req, res) => {
   }
 })
 
-// Admin — get all users
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const users = await User.find({}, '-password -otp -otpExpiry').sort({ createdAt: -1 })
@@ -101,7 +107,6 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 })
 
-// Admin — delete user
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id)
