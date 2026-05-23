@@ -1,27 +1,18 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import User from '../models/User.js'
+import authMiddleware from '../middleware/auth.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const router = express.Router()
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-})
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 const sendOTP = async (email, otp) => {
-  await transporter.sendMail({
-    from: `"EasyCart" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from: 'EasyCart <onboarding@resend.dev>',
     to: email,
     subject: 'Your EasyCart OTP',
     html: `<div style="font-family:sans-serif;padding:20px">
@@ -100,11 +91,7 @@ router.post('/login', async (req, res) => {
   }
 })
 
-export default router
-
 // Admin — get all users
-import authMiddleware from '../middleware/auth.js'
-
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const users = await User.find({}, '-password -otp -otpExpiry').sort({ createdAt: -1 })
@@ -123,3 +110,5 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 })
+
+export default router
