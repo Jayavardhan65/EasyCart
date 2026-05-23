@@ -10,7 +10,6 @@ dotenv.config()
 
 const router = express.Router()
 
-// Shopkeeper auth middleware
 const shopkeeperAuth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]
   if (!token) return res.status(401).json({ message: 'No token' })
@@ -24,21 +23,19 @@ const shopkeeperAuth = (req, res, next) => {
   }
 }
 
-// Public — register request
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password, shopName, phone } = req.body
     const existing = await Shopkeeper.findOne({ email })
     if (existing) return res.status(400).json({ message: 'Email already registered' })
     const hashed = await bcrypt.hash(password, 10)
-    const sk = await Shopkeeper.create({ name, email, password: hashed, shopName, phone })
+    await Shopkeeper.create({ name, email, password: hashed, shopName, phone })
     res.json({ success: true, message: 'Registration submitted. Await admin approval.' })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
 })
 
-// Public — login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body
@@ -55,7 +52,6 @@ router.post('/login', async (req, res) => {
   }
 })
 
-// Shopkeeper — get own products
 router.get('/products', shopkeeperAuth, async (req, res) => {
   try {
     const products = await Product.find({ shopkeeperId: req.shopkeeper.id }).sort({ createdAt: -1 })
@@ -65,22 +61,36 @@ router.get('/products', shopkeeperAuth, async (req, res) => {
   }
 })
 
-// Shopkeeper — add product
 router.post('/products', shopkeeperAuth, async (req, res) => {
   try {
-    const product = await Product.create({ ...req.body, shopkeeperId: req.shopkeeper.id, shopName: req.shopkeeper.shopName })
+    const product = await Product.create({
+      ...req.body,
+      price: Number(req.body.price),
+      stock: Number(req.body.stock) || 0,
+      badge: req.body.badge || null,
+      images: req.body.images || [],
+      shopkeeperId: req.shopkeeper.id,
+      shopName: req.shopkeeper.shopName
+    })
     res.status(201).json(product)
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
 })
 
-// Shopkeeper — edit product
 router.put('/products/:id', shopkeeperAuth, async (req, res) => {
   try {
     const product = await Product.findOneAndUpdate(
       { _id: req.params.id, shopkeeperId: req.shopkeeper.id },
-      req.body, { new: true }
+      {
+        name: req.body.name,
+        category: req.body.category,
+        price: Number(req.body.price),
+        stock: Number(req.body.stock) || 0,
+        badge: req.body.badge || null,
+        images: req.body.images || []
+      },
+      { new: true }
     )
     if (!product) return res.status(403).json({ message: 'Not your product' })
     res.json(product)
@@ -89,7 +99,6 @@ router.put('/products/:id', shopkeeperAuth, async (req, res) => {
   }
 })
 
-// Shopkeeper — delete product
 router.delete('/products/:id', shopkeeperAuth, async (req, res) => {
   try {
     const product = await Product.findOneAndDelete({ _id: req.params.id, shopkeeperId: req.shopkeeper.id })
@@ -100,7 +109,6 @@ router.delete('/products/:id', shopkeeperAuth, async (req, res) => {
   }
 })
 
-// Shopkeeper — get own orders + stats
 router.get('/orders', shopkeeperAuth, async (req, res) => {
   try {
     const myProducts = await Product.find({ shopkeeperId: req.shopkeeper.id }, 'name')
@@ -116,7 +124,6 @@ router.get('/orders', shopkeeperAuth, async (req, res) => {
   }
 })
 
-// Admin — get all shopkeepers
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const shopkeepers = await Shopkeeper.find({}, '-password').sort({ createdAt: -1 })
@@ -126,7 +133,6 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 })
 
-// Admin — approve/suspend/delete
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const sk = await Shopkeeper.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true })
