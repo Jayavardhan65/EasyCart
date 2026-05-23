@@ -1,8 +1,18 @@
 import express from 'express'
+import jwt from 'jsonwebtoken'
 import Order from '../models/Order.js'
 import Product from '../models/Product.js'
 import dotenv from 'dotenv'
 dotenv.config()
+
+const getUserId = (req) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
+    if (!token) return null
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    return decoded.id
+  } catch { return null }
+}
 
 const router = express.Router()
 
@@ -113,8 +123,20 @@ router.post('/', async (req, res) => {
     }
     const orderId = 'EC' + Date.now().toString().slice(-6)
     const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
-    const order = await Order.create({ ...req.body, orderId, total, status: 'Confirmed' })
+    const userId = getUserId(req)
+    const order = await Order.create({ ...req.body, orderId, total, status: 'Confirmed', userId })
     res.status(201).json(order)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+router.get('/my', async (req, res) => {
+  try {
+    const userId = getUserId(req)
+    if (!userId) return res.status(401).json({ message: 'Not authenticated' })
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 })
+    res.json(orders)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchOrders } from '../services/api'
+import { fetchMyOrders } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const statusStyle = (s) => {
   if (s === 'Delivered') return 'bg-green-50 text-green-600'
@@ -8,6 +9,7 @@ const statusStyle = (s) => {
   if (s === 'Shipped') return 'bg-purple-50 text-purple-600'
   return 'bg-orange-50 text-orange-500'
 }
+
 const statusEmoji = (s) => {
   if (s === 'Delivered') return '✅'
   if (s === 'Out for Delivery') return '🚚'
@@ -17,15 +19,17 @@ const statusEmoji = (s) => {
 
 export default function Orders() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchOrders().then(data => {
-      setOrders(Array.isArray(data) ? [...data].reverse() : [])
+    if (!user) { navigate('/login'); return }
+    fetchMyOrders().then(data => {
+      setOrders(Array.isArray(data) ? data : [])
       setLoading(false)
     })
-  }, [])
+  }, [user])
 
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -56,7 +60,7 @@ export default function Orders() {
             <p className="text-xs text-gray-400 mb-3">{new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
             {o.items.map((item, i) => (
               <div key={i} className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-50">
-                <span>{item.emoji} {item.name} × {item.quantity}</span>
+                <span className="truncate mr-2">{item.emoji} {item.name} × {item.quantity}</span>
                 <span className="flex-shrink-0 ml-2">₹{(item.price * item.quantity).toLocaleString()}</span>
               </div>
             ))}
