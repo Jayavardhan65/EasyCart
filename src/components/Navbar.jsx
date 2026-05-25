@@ -30,9 +30,14 @@ export default function Navbar() {
         {!isAdmin && !isShopkeeper && (
           <div className="hidden md:flex items-center gap-1">
             {navLink('/', 'Shop')}
-            <Link to="/cart" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-3 py-2 md:px-4 rounded-lg flex items-center gap-1.5 transition-colors">
-              🛒 Cart
-              <span className="bg-white text-orange-500 text-xs font-bold px-1.5 rounded-full">{cartCount}</span>
+            <Link
+              to="/cart"
+              className={`text-sm font-semibold px-3 py-2 rounded-md transition-colors relative ${pathname === '/cart' ? 'text-orange-400' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}
+            >
+              Cart
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">{cartCount}</span>
+              )}
             </Link>
             {navLink('/orders', 'Orders')}
             {user ? (
@@ -67,9 +72,13 @@ export default function Navbar() {
       {menuOpen && !isAdmin && !isShopkeeper && (
         <div className="md:hidden bg-gray-800 border-t border-gray-700 px-4 py-3 flex flex-col gap-1">
           {navLink('/', 'Shop')}
-          <Link to="/cart" onClick={() => setMenuOpen(false)} className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors w-fit">
-            🛒 Cart
-            <span className="bg-white text-orange-500 text-xs font-bold px-1.5 rounded-full">{cartCount}</span>
+          <Link
+            to="/cart"
+            onClick={() => setMenuOpen(false)}
+            className={`text-sm font-semibold px-3 py-2 rounded-md transition-colors flex items-center justify-between ${pathname === '/cart' ? 'text-orange-400' : 'text-gray-300 hover:text-white hover:bg-white/10'}`}
+          >
+            Cart
+            {cartCount > 0 && <span className="bg-orange-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">{cartCount}</span>}
           </Link>
           {navLink('/orders', 'Orders')}
           {navLink('/contact', 'Contact')}
