@@ -101,13 +101,25 @@ const sendStatusEmail = async (order, status) => {
 
 router.get('/my', async (req, res) => {
   try {
-    const userId = getUserId(req)
-    console.log('[/my] userId:', userId, '| auth:', req.headers.authorization?.slice(0,30))
-    if (!userId) return res.status(401).json({ message: 'Not authenticated' })
-    const allOrders = await Order.find({}).limit(3)
-    console.log('[/my] sample userIds in DB:', allOrders.map(o => o.userId))
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 })
-    console.log('[/my] matched orders:', orders.length)
+    const token = req.headers.authorization?.split(' ')[1]
+    if (!token) return res.status(401).json({ message: 'Not authenticated' })
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const userId = decoded.id
+    const userEmail = decoded.email
+    const orders = await Order.find({
+      $or: [{ userId }, { 'shipping.email': userEmail }]
+    }).sort({ createdAt: -1 })
+    res.json(orders)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+    const orders = await Order.find({
+      $or: [
+        { userId },
+        { 'shipping.email': { $regex: new RegExp('', 'i'), $exists: true }, userId: null }
+      ]
+    }).sort({ createdAt: -1 })
     res.json(orders)
   } catch (err) {
     res.status(500).json({ message: err.message })
