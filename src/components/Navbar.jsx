@@ -26,15 +26,15 @@ export default function Navbar() {
       <div className="h-14 flex items-center justify-between px-4 md:px-6">
         <Link to="/" className="text-white text-xl font-bold">EasyCart</Link>
 
-        {/* Desktop links — Cart moved into the middle nav */}
+        {/* Desktop links */}
         {!isAdmin && !isShopkeeper && (
           <div className="hidden md:flex items-center gap-1">
             {navLink('/', 'Shop')}
-            {navLink('/orders', 'Orders')}
             <Link to="/cart" className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-3 py-2 md:px-4 rounded-lg flex items-center gap-1.5 transition-colors">
               🛒 Cart
               <span className="bg-white text-orange-500 text-xs font-bold px-1.5 rounded-full">{cartCount}</span>
             </Link>
+            {navLink('/orders', 'Orders')}
             {user ? (
               <>
                 <span className="text-sm text-gray-300 px-3">👤 {user.name.split(' ')[0]}</span>
@@ -49,7 +49,7 @@ export default function Navbar() {
           <span className="text-sm text-gray-300 px-3 hidden md:block">👤 {user.name} <span className="text-xs text-gray-500 ml-1">(logged in)</span></span>
         )}
 
-        {/* Mobile: only hamburger on right */}
+        {/* Mobile: hamburger only */}
         <div className="flex items-center gap-2">
           {!isAdmin && !isShopkeeper && (
             <button onClick={() => setMenuOpen(o => !o)} className="md:hidden text-gray-300 hover:text-white p-2 rounded-md hover:bg-white/10 transition-colors">
@@ -67,11 +67,11 @@ export default function Navbar() {
       {menuOpen && !isAdmin && !isShopkeeper && (
         <div className="md:hidden bg-gray-800 border-t border-gray-700 px-4 py-3 flex flex-col gap-1">
           {navLink('/', 'Shop')}
-          {navLink('/orders', 'Orders')}
           <Link to="/cart" onClick={() => setMenuOpen(false)} className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors w-fit">
             🛒 Cart
             <span className="bg-white text-orange-500 text-xs font-bold px-1.5 rounded-full">{cartCount}</span>
           </Link>
+          {navLink('/orders', 'Orders')}
           {navLink('/contact', 'Contact')}
           {user ? (
             <>
