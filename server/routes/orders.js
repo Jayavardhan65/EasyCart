@@ -5,6 +5,8 @@ import Product from '../models/Product.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+const router = express.Router()
+
 const getUserId = (req) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]
@@ -13,8 +15,6 @@ const getUserId = (req) => {
     return decoded.id
   } catch { return null }
 }
-
-const router = express.Router()
 
 const STATUS_CONTENT = {
   'Shipped': {
@@ -43,7 +43,6 @@ const STATUS_CONTENT = {
 const sendStatusEmail = async (order, status) => {
   const c = STATUS_CONTENT[status]
   if (!c || !order.shipping?.email) return
-
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -55,50 +54,32 @@ const sendStatusEmail = async (order, status) => {
       sender: { name: 'EasyCart', email: process.env.EMAIL_USER },
       to: [{ email: order.shipping.email }],
       subject: c.subject,
-      htmlContent: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-          <div style="text-align:center;margin-bottom:24px">
-            <h2 style="color:#f97316;margin:0">EasyCart</h2>
-          </div>
-          <div style="background:#f9fafb;border-radius:12px;padding:24px;text-align:center;margin-bottom:20px">
-            <p style="font-size:48px;margin:0 0 12px">${c.emoji}</p>
-            <h2 style="color:#1f2937;margin:0 0 8px">${c.heading}</h2>
-            <p style="color:#6b7280;margin:0">${c.message}</p>
-          </div>
-          <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:20px">
-            <p style="font-size:12px;color:#9ca3af;margin:0 0 12px;font-weight:600;text-transform:uppercase">Order Details</p>
-            <p style="margin:0 0 4px;font-weight:700;color:#1f2937">${order.orderId}</p>
-            ${order.items.map(i => `
-              <div style="display:flex;justify-content:space-between;font-size:14px;color:#4b5563;padding:6px 0;border-bottom:1px solid #f3f4f6">
-                <span>${i.name} × ${i.quantity}</span>
-                <span>₹${(i.price * i.quantity).toLocaleString('en-IN')}</span>
-              </div>
-            `).join('')}
-            <div style="display:flex;justify-content:space-between;font-weight:700;color:#1f2937;margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb">
-              <span>Total</span>
-              <span>₹${order.total.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px;margin-bottom:20px">
-            <p style="font-size:12px;color:#9ca3af;margin:0 0 6px;font-weight:600">📍 DELIVERY ADDRESS</p>
-            <p style="margin:0;font-weight:600;color:#1f2937">${order.shipping.name} · ${order.shipping.phone}</p>
-            <p style="margin:4px 0 0;color:#6b7280;font-size:14px">${order.shipping.address}, ${order.shipping.city} - ${order.shipping.pincode}</p>
-          </div>
-          <div style="text-align:center;padding:16px;background:${c.color};border-radius:12px">
-            <p style="color:white;font-weight:700;font-size:16px;margin:0">Status: ${status}</p>
-          </div>
-          <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px">Thank you for shopping with EasyCart 🛍️</p>
+      htmlContent: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+        <h2 style="color:#f97316;text-align:center">EasyCart</h2>
+        <div style="background:#f9fafb;border-radius:12px;padding:24px;text-align:center;margin-bottom:20px">
+          <p style="font-size:48px;margin:0 0 12px">${c.emoji}</p>
+          <h2 style="color:#1f2937;margin:0 0 8px">${c.heading}</h2>
+          <p style="color:#6b7280;margin:0">${c.message}</p>
         </div>
-      `
+        <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:20px">
+          <p style="font-weight:700;color:#1f2937">${order.orderId}</p>
+          ${order.items.map(i => `<div style="display:flex;justify-content:space-between;font-size:14px;color:#4b5563;padding:6px 0;border-bottom:1px solid #f3f4f6"><span>${i.name} x ${i.quantity}</span><span>Rs.${(i.price * i.quantity).toLocaleString('en-IN')}</span></div>`).join('')}
+          <div style="display:flex;justify-content:space-between;font-weight:700;color:#1f2937;margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb"><span>Total</span><span>Rs.${order.total.toLocaleString('en-IN')}</span></div>
+        </div>
+        <div style="text-align:center;padding:16px;background:${c.color};border-radius:12px">
+          <p style="color:white;font-weight:700;font-size:16px;margin:0">Status: ${status}</p>
+        </div>
+        <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px">Thank you for shopping with EasyCart</p>
+      </div>`
     })
   })
-
   if (!response.ok) {
     const err = await response.json()
     throw new Error(err.message || 'Email send failed')
   }
 }
 
+// My orders — must be before GET /
 router.get('/my', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]
@@ -114,18 +95,8 @@ router.get('/my', async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 })
-    const orders = await Order.find({
-      $or: [
-        { userId },
-        { 'shipping.email': { $regex: new RegExp('', 'i'), $exists: true }, userId: null }
-      ]
-    }).sort({ createdAt: -1 })
-    res.json(orders)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
 
+// Admin — all orders
 router.get('/', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 })
@@ -135,6 +106,7 @@ router.get('/', async (req, res) => {
   }
 })
 
+// Create order
 router.post('/', async (req, res) => {
   try {
     const { items } = req.body
@@ -158,6 +130,7 @@ router.post('/', async (req, res) => {
   }
 })
 
+// Update order status
 router.put('/:id', async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(
@@ -166,13 +139,11 @@ router.put('/:id', async (req, res) => {
       { new: true }
     )
     if (!order) return res.status(404).json({ message: 'Order not found' })
-
     try {
       await sendStatusEmail(order, req.body.status)
     } catch (emailErr) {
       console.log('Email send failed (non-critical):', emailErr.message)
     }
-
     res.json(order)
   } catch (err) {
     res.status(500).json({ message: err.message })
