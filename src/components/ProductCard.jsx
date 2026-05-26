@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { useCart } from '../context/CartContext'
+import { useScrollAnimation } from '../hooks/useScrollAnimation'
+
 export default function ProductCard({ product }) {
   const { cart, addToCart } = useCart()
   const [imgIdx, setImgIdx] = useState(0)
+  const ref = useScrollAnimation()
   const inCart = cart.find(i => i._id === product._id)
   const outOfStock = product.stock === 0
   const images = product.images?.length > 0 ? product.images : null
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-md transition-all flex flex-col h-full">
+    <div ref={ref} className="scroll-hidden bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-md transition-all flex flex-col h-full">
       <div className="relative bg-gray-50" style={{paddingBottom:'75%'}}>
         <div className="absolute inset-0">
           {images ? (
