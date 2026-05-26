@@ -92,3 +92,8 @@ export const createOrder = (data) =>
 
 export const updateOrderStatus = (id, status) =>
   fetch(`${BASE}/orders/${id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status }) }).then(r => r.json())
+
+// Keep Render backend warm — ping every 14 minutes
+const pingBackend = () => fetch(`${BASE}/products?limit=1`).catch(() => {})
+pingBackend()
+setInterval(pingBackend, 14 * 60 * 1000)
