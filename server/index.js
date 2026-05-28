@@ -12,9 +12,8 @@ dotenv.config()
 
 const app = express()
 
-app.use((req,res,next)=>{console.log("ORIGIN:",req.headers.origin);next()})
 app.use(cors({
-  origin: "*", //
+  origin: [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'capacitor://localhost',
