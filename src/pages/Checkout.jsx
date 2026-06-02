@@ -26,7 +26,7 @@ export default function Checkout() {
         total,
         shipping: form
       })
-      if (res._id) { clearCart(); navigate('/orders') }
+      if (res._id) { clearCart(); navigate('/order-confirmation', { state: { order: res } }) }
       else setError(res.message || 'Order failed')
     } catch { setError('Something went wrong') }
     setLoading(false)

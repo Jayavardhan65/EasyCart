@@ -12,6 +12,7 @@ import Shopkeeper from './pages/Shopkeeper'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
 import NotFound from './pages/NotFound'
+import OrderConfirmation from './pages/OrderConfirmation'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/order-confirmation" element={<OrderConfirmation />} />
               <Route path="*" element={<NotFound />} />
               <Route path="/product/:id" element={<ProductDetail />} />
             </Routes>
