@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import SearchBar from '../components/SearchBar'
 import { useProducts } from '../context/ProductContext'
 import ProductCard from '../components/ProductCard'
 
@@ -71,12 +72,7 @@ export default function Shop() {
 
           {/* Row 1: search + sort */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search products..."
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-400 w-full sm:max-w-xs"
-            />
+<SearchBar products={products} value={search} onChange={setSearch} />
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
