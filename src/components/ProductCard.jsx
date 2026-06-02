@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useScrollAnimation } from '../hooks/useScrollAnimation'
 
 export default function ProductCard({ product }) {
   const { cart, addToCart } = useCart()
+  const { toggleWishlist, isWishlisted } = useWishlist()
+  const wishlisted = isWishlisted(product._id)
   const [imgIdx, setImgIdx] = useState(0)
   const ref = useScrollAnimation()
   const navigate = useNavigate()
@@ -34,6 +37,15 @@ export default function ProductCard({ product }) {
               <span className="text-5xl opacity-30">📦</span>
             </div>
           )}
+          <button
+            onClick={e => { e.stopPropagation(); toggleWishlist(product) }}
+            className={"absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-all z-10 " + (wishlisted ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-400 hover:text-red-400')}
+            aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            <svg className="w-3.5 h-3.5" fill={wishlisted ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
           {outOfStock && (
             <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
               <span className="text-xs font-bold text-red-400 bg-red-50 border border-red-100 px-2 py-1 rounded-full">Out of Stock</span>

@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const { cartCount } = useCart()
+  const { wishlistCount } = useWishlist()
   const { user, logout } = useAuth()
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -53,6 +55,7 @@ export default function Navbar() {
                 )}
               </Link>
               {navLink('/orders', 'Orders')}
+              {navLink('/wishlist', 'Wishlist')}
               {navLink('/contact', 'Contact')}
             </div>
           )}
@@ -119,6 +122,7 @@ export default function Navbar() {
               {cartCount > 0 && <span className="bg-orange-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">{cartCount}</span>}
             </Link>
             {navLink('/orders', 'Orders')}
+              {navLink('/wishlist', 'Wishlist')}
             {navLink('/contact', 'Contact')}
             {user ? (
               <>
