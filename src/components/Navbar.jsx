@@ -23,7 +23,9 @@ export default function Navbar() {
       }
     }
     document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    return (
+    <>
+      <a href="#main-content" className="skip-nav">Skip to content</a>) => document.removeEventListener('mousedown', handler)
   }, [])
 
   const navLink = (path, label) => (
@@ -35,6 +37,8 @@ export default function Navbar() {
   )
 
   return (
+    <>
+      <a href="#main-content" className="skip-nav">Skip to content</a>
     <nav className="bg-gray-800 sticky top-0 z-50">
       <div className="h-14 flex items-center justify-between px-4 md:px-6">
         <Link to="/" className="text-white text-xl font-bold">EasyCart</Link>
@@ -125,6 +129,7 @@ export default function Navbar() {
           {navLink('/contact', 'Contact')}
           {user ? (
             <>
+      <a href="#main-content" className="skip-nav">Skip to content</a>
               <span className="text-sm text-gray-400 px-3 py-2">👤 {user.name}</span>
               <button onClick={() => { logout(); navigate('/'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-gray-300 hover:text-white hover:bg-white/10 transition-colors">Logout</button>
             </>
@@ -132,5 +137,6 @@ export default function Navbar() {
         </div>
       )}
     </nav>
+    </>
   )
 }

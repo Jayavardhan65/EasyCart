@@ -33,7 +33,7 @@ export default function Shop() {
   )
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div id="main-content" className="bg-gray-100 min-h-screen">
       {/* Hero */}
       <div className="bg-gray-800 text-white text-center py-10 sm:py-16 px-4">
         <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">Free shipping over ₹499</span>
