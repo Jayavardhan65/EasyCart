@@ -46,6 +46,7 @@ export default function SearchBar({ products, value, onChange }) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive(a => Math.min(a + 1, suggestions.length - 1)) }
     if (e.key === 'ArrowUp')   { e.preventDefault(); setActive(a => Math.max(a - 1, -1)) }
     if (e.key === 'Enter' && active >= 0) { pick(suggestions[active].name) }
+    if (e.key === 'Enter' && active === -1 && value.trim()) { navigate('/search?q=' + encodeURIComponent(value.trim())); setOpen(false) }
     if (e.key === 'Escape') setOpen(false)
   }
 
