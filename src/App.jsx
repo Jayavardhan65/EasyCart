@@ -7,6 +7,7 @@ import Checkout from './pages/Checkout'
 import Login from './pages/Login'
 import Contact from './pages/Contact'
 import Admin from './pages/Admin'
+import ProductDetail from './pages/ProductDetail'
 import Shopkeeper from './pages/Shopkeeper'
 import Footer from './components/Footer'
 
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
             </Routes>
             <Footer />
           </>
