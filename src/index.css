@@ -36,3 +36,15 @@
 .skip-nav:focus {
   top: 0;
 }
+
+/* Bottom nav spacing — prevent content hiding behind fixed BottomNav */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 64px;
+  }
+}
+
+/* Safe area for notched phones */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}

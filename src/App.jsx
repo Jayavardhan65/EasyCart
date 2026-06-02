@@ -11,6 +11,7 @@ import ProductDetail from './pages/ProductDetail'
 import Shopkeeper from './pages/Shopkeeper'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
+import BottomNav from './components/BottomNav'
 import NotFound from './pages/NotFound'
 import OrderConfirmation from './pages/OrderConfirmation'
 import Search from './pages/Search'
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="/product/:id" element={<ProductDetail />} />
             </Routes>
             <Footer />
+            <BottomNav />
           </>
         } />
       </Routes>
