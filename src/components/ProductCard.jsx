@@ -45,7 +45,7 @@ export default function ProductCard({ product }) {
         {product.badge && <span className="text-xs bg-orange-500 text-white px-2 py-0.5 rounded-full font-bold mb-1.5 inline-block self-start">{product.badge}</span>}
         <p className="font-bold text-gray-800 text-xs sm:text-sm leading-tight line-clamp-2">{product.name}</p>
         <p className="text-xs text-gray-400 mt-0.5 mb-1">{product.category}</p>
-        {product.stock > 0 && product.stock <= 5 && <p className="text-xs text-yellow-500 font-semibold mb-1">⚠️ Only {product.stock} left</p>}
+        {product.stock === 0 ? null : product.stock <= 5 ? <p className="text-xs text-yellow-500 font-semibold mb-1">⚠️ Only {product.stock} left</p> : <p className="text-xs text-green-500 font-semibold mb-1">✓ In Stock</p>}
         <div className="flex items-center justify-between mt-auto pt-2">
           <span className="text-orange-500 font-bold text-sm sm:text-base">₹{product.price.toLocaleString()}</span>
           <button
