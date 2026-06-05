@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useProducts } from '../context/ProductContext'
 import { loginAdmin, verifyPin, fetchOrders, fetchUsers, deleteUser, fetchShopkeepers, updateShopkeeperStatus, deleteShopkeeper } from '../services/api'
+import { fetchDeliveryGuys, updateDeliveryGuyStatus, deleteDeliveryGuy } from '../services/deliveryAdmin'
 import { useLocation } from 'react-router-dom'
 
 export default function Admin() {
@@ -19,6 +20,9 @@ export default function Admin() {
   const [shopkeepers, setShopkeepers] = useState([])
   const [skSearch, setSkSearch] = useState('')
   const [skDeleteConfirm, setSkDeleteConfirm] = useState(null)
+  const [deliveryGuys, setDeliveryGuys] = useState([])
+  const [dlSearch, setDlSearch] = useState('')
+  const [dlDeleteConfirm, setDlDeleteConfirm] = useState(null)
 
   const logout = () => {
     setStep('login'); setCreds({ username: '', password: '' }); setPin('')
@@ -34,6 +38,7 @@ export default function Admin() {
     fetchOrders().then(d => setOrders(Array.isArray(d) ? d : []))
     fetchUsers().then(d => setUsers(Array.isArray(d) ? d : []))
     fetchShopkeepers().then(d => setShopkeepers(Array.isArray(d) ? d : []))
+    fetchDeliveryGuys().then(d => setDeliveryGuys(Array.isArray(d) ? d : []))
     const handleVisibility = () => { if (document.visibilityState === 'hidden') logout() }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
@@ -66,6 +71,15 @@ export default function Admin() {
   const handleSkDelete = async (id) => {
     await deleteShopkeeper(id); setShopkeepers(prev => prev.filter(s => s._id !== id)); setSkDeleteConfirm(null)
   }
+
+  const handleDlStatus = async (id, status) => {
+    await updateDeliveryGuyStatus(id, status)
+    setDeliveryGuys(prev => prev.map(d => d._id === id ? { ...d, status } : d))
+  }
+  const handleDlDelete = async (id) => {
+    await deleteDeliveryGuy(id); setDeliveryGuys(prev => prev.filter(d => d._id !== id)); setDlDeleteConfirm(null)
+  }
+  const filteredDl = deliveryGuys.filter(d => d.name?.toLowerCase().includes(dlSearch.toLowerCase()) || d.email?.toLowerCase().includes(dlSearch.toLowerCase()) || d.zone?.toLowerCase().includes(dlSearch.toLowerCase()))
 
   const filteredUsers = users.filter(u => u.name?.toLowerCase().includes(userSearch.toLowerCase()) || u.email?.toLowerCase().includes(userSearch.toLowerCase()))
   const filteredSk = shopkeepers.filter(s => s.name?.toLowerCase().includes(skSearch.toLowerCase()) || s.shopName?.toLowerCase().includes(skSearch.toLowerCase()) || s.email?.toLowerCase().includes(skSearch.toLowerCase()))
@@ -117,7 +131,7 @@ export default function Admin() {
   )
 
   // ── Dashboard ──
-  const TABS = [['products','🛍️','Products'],['orders','📦','Orders'],['users','👥','Users'],['shopkeepers','🏪','Shops']]
+  const TABS = [['products','🛍️','Products'],['orders','📦','Orders'],['users','👥','Users'],['shopkeepers','🏪','Shops'],['delivery','🚚','Delivery']]
 
   return (
     <div className="min-h-screen bg-gray-100 pb-20 md:pb-6">
@@ -150,13 +164,26 @@ export default function Admin() {
         </div>
       )}
 
+      {dlDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <p className="text-2xl text-center mb-2">🚚</p>
+            <h3 className="text-lg font-bold text-gray-800 text-center mb-1">Delete Delivery Guy?</h3>
+            <p className="text-sm text-gray-500 text-center mb-5"><strong>{dlDeleteConfirm.name}</strong> will be permanently removed.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDlDeleteConfirm(null)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl hover:bg-gray-50">Cancel</button>
+              <button onClick={() => handleDlDelete(dlDeleteConfirm._id)} className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 rounded-xl">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-gray-800 text-white px-4 sm:px-6 py-4 sm:py-6">
         <div className="max-w-4xl mx-auto flex justify-between items-start sm:items-center gap-3">
           <div>
             <h1 className="text-lg sm:text-2xl font-bold">Admin Dashboard</h1>
             <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
-              {[['🛍️', products.length, 'products'],['📦', orders.length, 'orders'],['👥', users.length, 'users'],['🏪', shopkeepers.length, 'shops']].map(([e,n,l]) => (
+              {[['🛍️', products.length, 'products'],['📦', orders.length, 'orders'],['👥', users.length, 'users'],['🏪', shopkeepers.length, 'shops'],['🚚', deliveryGuys.length, 'riders']].map(([e,n,l]) => (
                 <span key={l} className="text-xs text-gray-400">{e} {n} {l}</span>
               ))}
             </div>
@@ -312,6 +339,54 @@ export default function Admin() {
                       {s.status !== 'suspended' && <button onClick={() => handleSkStatus(s._id, 'suspended')} className="text-xs bg-yellow-50 hover:bg-yellow-100 text-yellow-600 border border-yellow-100 font-semibold px-3 py-1.5 rounded-lg">⏸ Suspend</button>}
                       {s.status !== 'pending' && <button onClick={() => handleSkStatus(s._id, 'pending')} className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 font-semibold px-3 py-1.5 rounded-lg">↩ Pending</button>}
                       <button onClick={() => setSkDeleteConfirm(s)} className="text-xs bg-red-50 hover:bg-red-100 text-red-500 border border-red-100 font-semibold px-3 py-1.5 rounded-lg ml-auto">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+
+        {/* Delivery Guys */}
+        {tab === 'delivery' && (
+          <div>
+            <div className="relative mb-4">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+              <input value={dlSearch} onChange={e => setDlSearch(e.target.value)} placeholder="Search by name, email or zone..." className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none focus:border-orange-400 bg-white" />
+              {dlSearch && <button onClick={() => setDlSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">×</button>}
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[['Total', deliveryGuys.length, 'text-gray-800'],['Active', deliveryGuys.filter(d=>d.status==='active').length, 'text-green-600'],['Pending', deliveryGuys.filter(d=>d.status==='pending').length, 'text-yellow-500']].map(([l,n,c]) => (
+                <div key={l} className="bg-white border border-gray-200 rounded-xl p-3 text-center">
+                  <p className={`text-xl sm:text-2xl font-bold ${c}`}>{n}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{l}</p>
+                </div>
+              ))}
+            </div>
+            {filteredDl.length === 0 ? (
+              <div className="text-center py-16"><p className="text-5xl mb-3">🚚</p><p className="text-gray-500 font-semibold">No delivery guys yet</p></div>
+            ) : (
+              <div className="grid gap-3">
+                {filteredDl.map(d => (
+                  <div key={d._id} className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-lg flex-shrink-0">🚚</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-gray-800 text-sm">{d.name}</p>
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${statusBadge(d.status)}`}>{d.status}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{d.email}</p>
+                        {d.phone && <p className="text-xs text-gray-400">{d.phone}</p>}
+                        {d.zone && <p className="text-xs text-blue-500 font-semibold mt-0.5">📍 {d.zone}</p>}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-3 flex-wrap">
+                      {d.status !== 'active' && <button onClick={() => handleDlStatus(d._id, 'active')} className="text-xs bg-green-50 hover:bg-green-100 text-green-600 border border-green-100 font-semibold px-3 py-1.5 rounded-lg">✓ Approve</button>}
+                      {d.status !== 'suspended' && <button onClick={() => handleDlStatus(d._id, 'suspended')} className="text-xs bg-yellow-50 hover:bg-yellow-100 text-yellow-600 border border-yellow-100 font-semibold px-3 py-1.5 rounded-lg">⏸ Suspend</button>}
+                      {d.status !== 'pending' && <button onClick={() => handleDlStatus(d._id, 'pending')} className="text-xs bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 font-semibold px-3 py-1.5 rounded-lg">↩ Pending</button>}
+                      <button onClick={() => setDlDeleteConfirm(d)} className="text-xs bg-red-50 hover:bg-red-100 text-red-500 border border-red-100 font-semibold px-3 py-1.5 rounded-lg ml-auto">Delete</button>
                     </div>
                   </div>
                 ))}
