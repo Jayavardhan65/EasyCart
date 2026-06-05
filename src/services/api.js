@@ -91,7 +91,6 @@ export const createOrder = (data) =>
   fetch(`${BASE}/orders`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json())
 
 export const updateOrderStatus = (id, status) =>
-  fetch(`${BASE}/orders/${id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status }) }).then(r => r.json())
 
 // DELIVERY
 const getDlToken = () => localStorage.getItem('delivery_token')
@@ -112,7 +111,6 @@ export const fetchDeliveryOrders = () =>
 export const updateDeliveryOrderStatus = (id, status) =>
   fetch(`${BASE}/delivery/orders/${id}`, { method: 'PUT', headers: dlHeaders(true), body: JSON.stringify({ status }) }).then(r => r.json())
 
-  fetch(`${BASE}/orders/${id}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("delivery_token")}` }, body: JSON.stringify({ status: "Delivered" }) }).then(r => r.json())
 
 // Keep Render backend warm — ping every 14 minutes
 const pingBackend = () => fetch(`${BASE}/products?limit=1`).catch(() => {})
