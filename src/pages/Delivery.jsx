@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchOrders, updateOrderStatus } from '../services/api'
-
-const DELIVERY_PIN = '7777'
+import { loginDeliveryGuy, registerDeliveryGuy, fetchDeliveryOrders, updateDeliveryOrderStatus } from '../services/api'
 
 const statusStyle = (s) => {
   if (s === 'Delivered') return 'bg-green-50 text-green-600 border-green-100'
@@ -9,7 +7,6 @@ const statusStyle = (s) => {
   if (s === 'Shipped') return 'bg-purple-50 text-purple-600 border-purple-100'
   return 'bg-orange-50 text-orange-500 border-orange-100'
 }
-
 const statusEmoji = (s) => {
   if (s === 'Delivered') return '✅'
   if (s === 'Out for Delivery') return '🚚'
@@ -18,55 +15,71 @@ const statusEmoji = (s) => {
 }
 
 export default function Delivery() {
-  const [pin, setPin] = useState('')
-  const [pinError, setPinError] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(() => localStorage.getItem('delivery_auth') === 'true')
-  const [orders, setOrders] = useState([])
+  const [mode, setMode] = useState('login') // login | register
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', zone: '' })
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [deliveryGuy, setDeliveryGuy] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('delivery_guy') || 'null') } catch { return null }
+  })
+  const [orders, setOrders] = useState([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
   const [filter, setFilter] = useState('active')
   const [updating, setUpdating] = useState(null)
   const [expandedOrder, setExpandedOrder] = useState(null)
 
   useEffect(() => {
-    if (!loggedIn) return
-    setLoading(true)
-    fetchOrders()
+    if (!deliveryGuy) return
+    setOrdersLoading(true)
+    fetchDeliveryOrders()
       .then(d => setOrders(Array.isArray(d) ? d : []))
-      .finally(() => setLoading(false))
-  }, [loggedIn])
+      .finally(() => setOrdersLoading(false))
+  }, [deliveryGuy])
 
-  const handlePin = (digit) => {
-    const newPin = pin + digit
-    setPin(newPin)
-    setPinError(false)
-    if (newPin.length === 4) {
-      if (newPin === DELIVERY_PIN) {
-        localStorage.setItem('delivery_auth', 'true')
-        setLoggedIn(true)
-      } else {
-        setPinError(true)
-        setTimeout(() => setPin(''), 600)
-      }
+  const handleLogin = async () => {
+    if (!form.email || !form.password) return setError('Please fill all fields')
+    setLoading(true); setError('')
+    const res = await loginDeliveryGuy(form.email, form.password)
+    setLoading(false)
+    if (res.success) {
+      localStorage.setItem('delivery_token', res.token)
+      localStorage.setItem('delivery_guy', JSON.stringify(res.deliveryGuy))
+      setDeliveryGuy(res.deliveryGuy)
+    } else {
+      setError(res.message || 'Login failed')
+    }
+  }
+
+  const handleRegister = async () => {
+    if (!form.name || !form.email || !form.password || !form.phone) return setError('Please fill all required fields')
+    setLoading(true); setError('')
+    const res = await registerDeliveryGuy(form)
+    setLoading(false)
+    if (res.success) {
+      setMode('login')
+      setError('')
+      setForm({ name: '', email: '', password: '', phone: '', zone: '' })
+      alert('Registration submitted! Wait for admin approval, then login.')
+    } else {
+      setError(res.message || 'Registration failed')
     }
   }
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     setUpdating(orderId)
     try {
-      await updateOrderStatus(orderId, newStatus)
+      await updateDeliveryOrderStatus(orderId, newStatus)
       setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o))
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setUpdating(null)
-    }
+    } catch (e) { console.error(e) }
+    finally { setUpdating(null) }
   }
 
   const logout = () => {
-    localStorage.removeItem('delivery_auth')
-    setLoggedIn(false)
-    setPin('')
+    localStorage.removeItem('delivery_token')
+    localStorage.removeItem('delivery_guy')
+    setDeliveryGuy(null)
     setOrders([])
+    setForm({ name: '', email: '', password: '', phone: '', zone: '' })
   }
 
   const filtered = orders.filter(o => {
@@ -75,37 +88,61 @@ export default function Delivery() {
     return true
   })
 
-  // PIN LOGIN SCREEN
-  if (!loggedIn) return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-      <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-xs text-center">
-        <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">🚚</span>
+  const field = (key, placeholder, type = 'text', required = true) => (
+    <input
+      type={type}
+      placeholder={placeholder + (required ? ' *' : '')}
+      value={form[key]}
+      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+      className="w-full bg-gray-700 text-white placeholder-gray-400 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600"
+    />
+  )
+
+  // AUTH SCREEN
+  if (!deliveryGuy) return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 py-10">
+      <div className="bg-gray-800 rounded-2xl p-8 w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+            <span className="text-2xl">🚚</span>
+          </div>
+          <h1 className="text-white font-bold text-xl">Delivery Portal</h1>
+          <p className="text-gray-400 text-sm mt-1">{mode === 'login' ? 'Sign in to your account' : 'Create a new account'}</p>
         </div>
-        <h1 className="text-white font-bold text-xl mb-1">Delivery Portal</h1>
-        <p className="text-gray-400 text-sm mb-6">Enter your 4-digit PIN</p>
 
-        {/* PIN dots */}
-        <div className="flex justify-center gap-3 mb-6">
-          {[0,1,2,3].map(i => (
-            <div key={i} className={`w-3 h-3 rounded-full transition-all ${i < pin.length ? (pinError ? 'bg-red-500' : 'bg-orange-500') : 'bg-gray-600'}`} />
-          ))}
-        </div>
-
-        {pinError && <p className="text-red-400 text-xs mb-4 animate-pulse">Incorrect PIN. Try again.</p>}
-
-        {/* Keypad */}
-        <div className="grid grid-cols-3 gap-3">
-          {[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map((k, i) => (
+        {/* Tabs */}
+        <div className="flex bg-gray-700 rounded-xl p-1 mb-6">
+          {['login', 'register'].map(m => (
             <button
-              key={i}
-              onClick={() => {
-                if (k === '⌫') { setPin(p => p.slice(0,-1)); setPinError(false) }
-                else if (k !== '') handlePin(String(k))
-              }}
-              className={`h-12 rounded-xl font-bold text-lg transition-all ${k === '' ? 'invisible' : 'bg-gray-700 text-white hover:bg-gray-600 active:bg-orange-500'}`}
-            >{k}</button>
+              key={m}
+              onClick={() => { setMode(m); setError('') }}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all capitalize ${mode === m ? 'bg-orange-500 text-white' : 'text-gray-400 hover:text-white'}`}
+            >{m}</button>
           ))}
+        </div>
+
+        {/* Form */}
+        <div className="flex flex-col gap-3">
+          {mode === 'register' && field('name', 'Full Name')}
+          {field('email', 'Email Address', 'email')}
+          {field('password', 'Password', 'password')}
+          {mode === 'register' && field('phone', 'Phone Number', 'tel')}
+          {mode === 'register' && field('zone', 'Delivery Zone (e.g. Koramangala)', 'text', false)}
+
+          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+
+          <button
+            onClick={mode === 'login' ? handleLogin : handleRegister}
+            disabled={loading}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition-colors disabled:opacity-50 mt-1"
+          >
+            {loading ? '...' : mode === 'login' ? 'Sign In' : 'Register'}
+          </button>
+
+          {mode === 'register' && (
+            <p className="text-xs text-gray-400 text-center">After registering, wait for admin approval before logging in.</p>
+          )}
         </div>
       </div>
     </div>
@@ -120,11 +157,11 @@ export default function Delivery() {
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center text-lg">🚚</div>
             <div>
-              <p className="font-bold text-sm">Delivery Dashboard</p>
-              <p className="text-gray-400 text-xs">{filtered.length} order{filtered.length !== 1 ? 's' : ''} to show</p>
+              <p className="font-bold text-sm">Hey, {deliveryGuy.name}!</p>
+              <p className="text-gray-400 text-xs">{filtered.length} order{filtered.length !== 1 ? 's' : ''} • {deliveryGuy.zone || 'All zones'}</p>
             </div>
           </div>
-          <button onClick={logout} className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10">Logout</button>
+          <button onClick={logout} className="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-colors">Logout</button>
         </div>
       </div>
 
@@ -148,15 +185,11 @@ export default function Delivery() {
         </div>
       </div>
 
-      {/* Orders */}
+      {/* Orders list */}
       <div className="max-w-2xl mx-auto px-4 py-4 space-y-3">
-        {loading && (
-          <div className="text-center py-16">
-            <p className="text-gray-400 animate-pulse font-semibold">Loading orders...</p>
-          </div>
-        )}
+        {ordersLoading && <div className="text-center py-16"><p className="text-gray-400 animate-pulse font-semibold">Loading orders...</p></div>}
 
-        {!loading && filtered.length === 0 && (
+        {!ordersLoading && filtered.length === 0 && (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">📭</p>
             <p className="text-gray-500 font-semibold">No orders here</p>
@@ -165,13 +198,9 @@ export default function Delivery() {
 
         {filtered.map(order => (
           <div key={order._id} className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            {/* Order header */}
-            <div
-              className="p-4 flex items-center justify-between cursor-pointer"
-              onClick={() => setExpandedOrder(expandedOrder === order._id ? null : order._id)}
-            >
+            <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order._id ? null : order._id)}>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="font-bold text-gray-800 text-sm">{order.orderId}</span>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${statusStyle(order.status)}`}>
                     {statusEmoji(order.status)} {order.status}
@@ -197,7 +226,7 @@ export default function Delivery() {
               </div>
             )}
 
-            {/* Expanded — items */}
+            {/* Expanded items */}
             {expandedOrder === order._id && (
               <div className="px-4 pb-3 border-t border-gray-100 pt-3">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Items</p>
@@ -210,8 +239,7 @@ export default function Delivery() {
                   ))}
                 </div>
                 <div className="flex justify-between font-bold text-gray-800 text-sm border-t border-gray-100 pt-2">
-                  <span>Total</span>
-                  <span>₹{order.total?.toLocaleString()}</span>
+                  <span>Total</span><span>₹{order.total?.toLocaleString()}</span>
                 </div>
               </div>
             )}
@@ -224,17 +252,13 @@ export default function Delivery() {
                     onClick={() => handleStatusUpdate(order._id, 'Out for Delivery')}
                     disabled={updating === order._id}
                     className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
-                  >
-                    {updating === order._id ? '...' : '🚚 Mark Out for Delivery'}
-                  </button>
+                  >{updating === order._id ? '...' : '🚚 Out for Delivery'}</button>
                 )}
                 <button
                   onClick={() => handleStatusUpdate(order._id, 'Delivered')}
                   disabled={updating === order._id}
                   className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
-                >
-                  {updating === order._id ? '...' : '✅ Mark Delivered'}
-                </button>
+                >{updating === order._id ? '...' : '✅ Mark Delivered'}</button>
               </div>
             )}
           </div>

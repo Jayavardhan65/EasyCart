@@ -94,6 +94,25 @@ export const updateOrderStatus = (id, status) =>
   fetch(`${BASE}/orders/${id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status }) }).then(r => r.json())
 
 // DELIVERY
+const getDlToken = () => localStorage.getItem('delivery_token')
+const dlHeaders = (auth = false) => ({
+  'Content-Type': 'application/json',
+  ...(auth && { Authorization: `Bearer ${getDlToken()}` })
+})
+
+export const registerDeliveryGuy = (data) =>
+  fetch(`${BASE}/delivery/register`, { method: 'POST', headers: dlHeaders(), body: JSON.stringify(data) }).then(r => r.json())
+
+export const loginDeliveryGuy = (email, password) =>
+  fetch(`${BASE}/delivery/login`, { method: 'POST', headers: dlHeaders(), body: JSON.stringify({ email, password }) }).then(r => r.json())
+
+export const fetchDeliveryOrders = () =>
+  fetch(`${BASE}/delivery/orders`, { headers: dlHeaders(true) }).then(r => r.json())
+
+export const updateDeliveryOrderStatus = (id, status) =>
+  fetch(`${BASE}/delivery/orders/${id}`, { method: 'PUT', headers: dlHeaders(true), body: JSON.stringify({ status }) }).then(r => r.json())
+
+// OLD DELIVERY (keep for compatibility)
 export const loginDelivery = (pin) =>
   fetch(`${BASE}/auth/delivery-login`, { method: "POST", headers: headers(), body: JSON.stringify({ pin }) }).then(r => r.json())
 

@@ -7,6 +7,7 @@ import orderRoutes from './routes/orders.js'
 import authRoutes from './routes/auth.js'
 import userRoutes from './routes/users.js'
 import shopkeeperRoutes from './routes/shopkeepers.js'
+import deliveryRoutes from './routes/delivery.js'
 
 dotenv.config()
 
@@ -26,6 +27,7 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/shopkeepers', shopkeeperRoutes)
+app.use('/api/delivery', deliveryRoutes)
 app.get('/', (req, res) => res.json({ message: 'EasyCart API running' }))
 
 mongoose.connect(process.env.MONGO_URI)
