@@ -1,5 +1,6 @@
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 
 export default function Cart() {
   const { cart, changeQty, removeFromCart } = useCart()
@@ -8,6 +9,25 @@ export default function Cart() {
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0)
   const shipping = subtotal >= 499 ? 0 : 49
   const total = subtotal + shipping
+
+  const confirmRemove = (item) => {
+    toast((t) => (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <p style={{ fontWeight: 700, color: '#111', margin: 0 }}>Remove item?</p>
+        <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>{item.name}</p>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+          <button
+            onClick={() => { removeFromCart(item._id); toast.dismiss(t.id) }}
+            style={{ flex: 1, background: '#ef4444', color: '#fff', fontWeight: 700, padding: '6px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px' }}
+          >Remove</button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            style={{ flex: 1, background: '#f3f4f6', color: '#374151', fontWeight: 700, padding: '6px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px' }}
+          >Cancel</button>
+        </div>
+      </div>
+    ), { duration: 8000, style: { background: '#fff', padding: '12px', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' } })
+  }
 
   if (!cart.length) return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center gap-4 px-4">
@@ -42,7 +62,7 @@ export default function Cart() {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="font-bold text-sm text-gray-800">₹{(item.price * item.quantity).toLocaleString()}</p>
-                  <button onClick={() => removeFromCart(item._id)} className="text-gray-300 hover:text-red-400 text-base transition-colors">🗑</button>
+                  <button onClick={() => confirmRemove(item)} className="text-gray-300 hover:text-red-400 text-base transition-colors">🗑</button>
                 </div>
               </div>
             ))}
