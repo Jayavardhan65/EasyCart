@@ -117,3 +117,46 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 })
 
 export default router
+
+// User auth middleware (for address routes)
+const userAuth = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
+    if (!token) return res.status(401).json({ message: 'Not authenticated' })
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    req.userId = decoded.id
+    next()
+  } catch { res.status(401).json({ message: 'Invalid token' }) }
+}
+
+// Get all saved addresses
+router.get('/addresses', userAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId, 'addresses')
+    res.json(user?.addresses || [])
+  } catch (err) { res.status(500).json({ message: err.message }) }
+})
+
+// Add a new address
+router.post('/addresses', userAuth, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $push: { addresses: req.body } },
+      { new: true }
+    )
+    res.json(user.addresses)
+  } catch (err) { res.status(500).json({ message: err.message }) }
+})
+
+// Delete an address
+router.delete('/addresses/:addressId', userAuth, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.userId,
+      { $pull: { addresses: { _id: req.params.addressId } } },
+      { new: true }
+    )
+    res.json(user.addresses)
+  } catch (err) { res.status(500).json({ message: err.message }) }
+})

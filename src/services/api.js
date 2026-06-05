@@ -98,6 +98,19 @@ export const acceptOrder = (id, shopName) =>
 export const verifyPickup = (id, code, deliveryName) =>
   fetch(`${BASE}/orders/${id}/verify-pickup`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, deliveryName }) }).then(r => r.json())
 
+// USER ADDRESSES
+const getUserToken = () => localStorage.getItem("user_token")
+const userHeaders = () => ({ "Content-Type": "application/json", Authorization: `Bearer ${getUserToken()}` })
+
+export const fetchAddresses = () =>
+  fetch(`${BASE}/users/addresses`, { headers: userHeaders() }).then(r => r.json())
+
+export const saveAddress = (data) =>
+  fetch(`${BASE}/users/addresses`, { method: "POST", headers: userHeaders(), body: JSON.stringify(data) }).then(r => r.json())
+
+export const deleteAddress = (id) =>
+  fetch(`${BASE}/users/addresses/${id}`, { method: "DELETE", headers: userHeaders() }).then(r => r.json())
+
 // DELIVERY
 const getDlToken = () => localStorage.getItem('delivery_token')
 const dlHeaders = (auth = false) => ({
