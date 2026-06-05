@@ -1,7 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
 const getToken = () => localStorage.getItem('admin_token')
-
 const headers = (auth = false) => ({
   'Content-Type': 'application/json',
   ...(auth && { Authorization: `Bearer ${getToken()}` })
@@ -33,6 +32,12 @@ export const fetchMyOrders = () =>
 
 export const fetchOrders = () =>
   fetch(`${BASE}/orders`, { headers: headers(true) }).then(r => r.json())
+
+export const createOrder = (data) =>
+  fetch(`${BASE}/orders`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json())
+
+export const updateOrderStatus = (id, status) =>
+  fetch(`${BASE}/orders/${id}`, { method: 'PUT', headers: headers(), body: JSON.stringify({ status }) }).then(r => r.json())
 
 // USER AUTH
 export const registerUser = (name, email, password) =>
@@ -87,11 +92,6 @@ export const updateShopkeeperStatus = (id, status) =>
 export const deleteShopkeeper = (id) =>
   fetch(`${BASE}/shopkeepers/${id}`, { method: 'DELETE', headers: headers(true) }).then(r => r.json())
 
-export const createOrder = (data) =>
-  fetch(`${BASE}/orders`, { method: 'POST', headers: headers(), body: JSON.stringify(data) }).then(r => r.json())
-
-export const updateOrderStatus = (id, status) =>
-
 // DELIVERY
 const getDlToken = () => localStorage.getItem('delivery_token')
 const dlHeaders = (auth = false) => ({
@@ -110,7 +110,6 @@ export const fetchDeliveryOrders = () =>
 
 export const updateDeliveryOrderStatus = (id, status) =>
   fetch(`${BASE}/delivery/orders/${id}`, { method: 'PUT', headers: dlHeaders(true), body: JSON.stringify({ status }) }).then(r => r.json())
-
 
 // Keep Render backend warm — ping every 14 minutes
 const pingBackend = () => fetch(`${BASE}/products?limit=1`).catch(() => {})
