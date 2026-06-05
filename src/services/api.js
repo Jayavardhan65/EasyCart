@@ -92,6 +92,15 @@ export const updateShopkeeperStatus = (id, status) =>
 export const deleteShopkeeper = (id) =>
   fetch(`${BASE}/shopkeepers/${id}`, { method: 'DELETE', headers: headers(true) }).then(r => r.json())
 
+export const acceptOrder = (id, shopName) =>
+  fetch(`${BASE}/orders/${id}/accept`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopName }) }).then(r => r.json())
+
+export const acceptOrder = (id, shopName) =>
+  fetch(`${BASE}/orders/${id}/accept`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopName }) }).then(r => r.json())
+
+export const verifyPickup = (id, code, deliveryName) =>
+  fetch(`${BASE}/orders/${id}/verify-pickup`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, deliveryName }) }).then(r => r.json())
+
 // DELIVERY
 const getDlToken = () => localStorage.getItem('delivery_token')
 const dlHeaders = (auth = false) => ({

@@ -20,7 +20,10 @@ const orderSchema = new mongoose.Schema({
     city: String,
     pincode: String
   },
-  shippingCharge: { type: Number, default: 0 }
+  shippingCharge: { type: Number, default: 0 },
+  verificationCode: { type: String, default: null },
+  acceptedBy: { type: String, default: null },
+  pickedUpBy: { type: String, default: null }
 }, { timestamps: true })
 
 export default mongoose.model('Order', orderSchema)

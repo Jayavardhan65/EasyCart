@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { loginShopkeeper, registerShopkeeper, fetchSkProducts, createSkProduct, updateSkProduct, deleteSkProduct, fetchSkOrders, updateOrderStatus } from '../services/api'
+import { loginShopkeeper, registerShopkeeper, fetchSkProducts, createSkProduct, updateSkProduct, deleteSkProduct, fetchSkOrders, updateOrderStatus, acceptOrder } from '../services/api'
 
 const CATS = ['Electronics', 'Fashion', 'Home', 'Books', 'Sports']
-const STATUS_FLOW = ['Confirmed', 'Shipped', 'Out for Delivery', 'Delivered']
+const STATUS_FLOW = ['Confirmed', 'Accepted', 'Shipped', 'Out for Delivery', 'Delivered']
 
 const statusStyle = (status) => {
   if (status === 'Delivered') return 'bg-green-50 text-green-600 border-green-100'
@@ -41,6 +41,7 @@ export default function Shopkeeper() {
   const [restockId, setRestockId] = useState(null)
   const [restockQty, setRestockQty] = useState('')
   const [updatingOrder, setUpdatingOrder] = useState(null)
+  const [verificationCodes, setVerificationCodes] = useState({})
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef()
 
@@ -126,8 +127,16 @@ export default function Shopkeeper() {
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     setUpdatingOrder(orderId)
-    const updated = await updateOrderStatus(orderId, newStatus)
-    setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: updated.status } : o))
+    if (newStatus === 'Accepted') {
+      const res = await acceptOrder(orderId, shopkeeper?.shopName || 'Shopkeeper')
+      if (res.success) {
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'Accepted', verificationCode: res.verificationCode } : o))
+        setVerificationCodes(prev => ({ ...prev, [orderId]: res.verificationCode }))
+      }
+    } else {
+      const updated = await updateOrderStatus(orderId, newStatus)
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: updated.status } : o))
+    }
     setUpdatingOrder(null)
   }
 
@@ -380,9 +389,16 @@ export default function Shopkeeper() {
                           )
                         })}
                       </div>
+                      {(o.status === 'Accepted' || o.verificationCode || verificationCodes[o._id]) && (
+                        <div className="mb-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-center">
+                          <p className="text-xs text-orange-500 font-semibold mb-1">🔐 Verification Code for Delivery Guy</p>
+                          <p className="text-2xl font-bold tracking-widest text-orange-600">{o.verificationCode || verificationCodes[o._id]}</p>
+                          <p className="text-xs text-gray-400 mt-1">Share this code with the delivery person</p>
+                        </div>
+                      )}
                       {nextStatus ? (
                         <button onClick={() => handleStatusUpdate(o._id, nextStatus)} disabled={updatingOrder === o._id} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl text-sm disabled:opacity-60">
-                          {updatingOrder === o._id ? 'Updating...' : `Mark as ${nextStatus} →`}
+                          {updatingOrder === o._id ? 'Updating...' : nextStatus === 'Accepted' ? '✅ Accept Order' : nextStatus === 'Shipped' ? '📦 Mark as Packed' : `Mark as ${nextStatus} →`}
                         </button>
                       ) : (
                         <div className="w-full bg-green-50 border border-green-100 text-green-600 font-bold py-2.5 rounded-xl text-sm text-center">✅ Order Delivered</div>

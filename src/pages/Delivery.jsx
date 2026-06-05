@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { loginDeliveryGuy, registerDeliveryGuy, fetchDeliveryOrders, updateDeliveryOrderStatus } from '../services/api'
+import { loginDeliveryGuy, registerDeliveryGuy, fetchDeliveryOrders, updateDeliveryOrderStatus, verifyPickup } from '../services/api'
 
 const statusStyle = (s) => {
   if (s === 'Delivered') return 'bg-green-50 text-green-600 border-green-100'
@@ -25,6 +25,10 @@ export default function Delivery() {
   const [filter, setFilter] = useState('active')
   const [updating, setUpdating] = useState(null)
   const [expandedOrder, setExpandedOrder] = useState(null)
+  const [verifyModal, setVerifyModal] = useState(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [verifyError, setVerifyError] = useState('')
+  const [verifying, setVerifying] = useState(false)
 
   useEffect(() => {
     try {
@@ -85,6 +89,19 @@ export default function Delivery() {
     setDeliveryGuy(null)
     setOrders([])
     setForm({ name: '', email: '', password: '', phone: '', zone: '' })
+  }
+
+  const handleVerifyPickup = async () => {
+    if (!codeInput.trim()) return setVerifyError('Enter the 6-digit code')
+    setVerifying(true); setVerifyError('')
+    const res = await verifyPickup(verifyModal._id, codeInput.trim(), deliveryGuy?.name)
+    setVerifying(false)
+    if (res.success) {
+      setOrders(prev => prev.map(o => o._id === verifyModal._id ? { ...o, status: 'Out for Delivery' } : o))
+      setVerifyModal(null); setCodeInput('')
+    } else {
+      setVerifyError(res.message || 'Invalid code')
+    }
   }
 
   const filtered = orders.filter(o => {
@@ -156,6 +173,31 @@ export default function Delivery() {
   // DASHBOARD
   return (
     <div className="min-h-screen bg-gray-100">
+      {verifyModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <p className="text-3xl text-center mb-2">🔐</p>
+            <h3 className="text-lg font-bold text-gray-800 text-center mb-1">Verify Package</h3>
+            <p className="text-sm text-gray-500 text-center mb-1">{verifyModal.orderId}</p>
+            <p className="text-xs text-gray-400 text-center mb-4">Enter the 6-digit code from the shopkeeper</p>
+            <input
+              type="number"
+              value={codeInput}
+              onChange={e => { setCodeInput(e.target.value); setVerifyError('') }}
+              placeholder="000000"
+              maxLength={6}
+              className="w-full border-2 border-gray-200 focus:border-orange-400 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest outline-none mb-3"
+            />
+            {verifyError && <p className="text-red-500 text-xs text-center mb-3">{verifyError}</p>}
+            <div className="flex gap-3">
+              <button onClick={() => { setVerifyModal(null); setCodeInput('') }} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl">Cancel</button>
+              <button onClick={handleVerifyPickup} disabled={verifying} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl disabled:opacity-50">
+                {verifying ? '...' : 'Verify & Pick Up'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="bg-gray-800 text-white px-4 py-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -250,19 +292,20 @@ export default function Delivery() {
             )}
 
             {/* Action buttons */}
-            {order.status !== 'Delivered' && (
-              <div className="px-4 pb-4 flex gap-2">
-                {order.status !== 'Out for Delivery' && (
-                  <button
-                    onClick={() => handleStatusUpdate(order._id, 'Out for Delivery')}
-                    disabled={updating === order._id}
-                    className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
-                  >{updating === order._id ? '...' : '🚚 Out for Delivery'}</button>
-                )}
+            {order.status === 'Shipped' && (
+              <div className="px-4 pb-4">
+                <button
+                  onClick={() => { setVerifyModal(order); setCodeInput(''); setVerifyError('') }}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors"
+                >🔐 Enter Verification Code to Pick Up</button>
+              </div>
+            )}
+            {order.status === 'Out for Delivery' && (
+              <div className="px-4 pb-4">
                 <button
                   onClick={() => handleStatusUpdate(order._id, 'Delivered')}
                   disabled={updating === order._id}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
                 >{updating === order._id ? '...' : '✅ Mark Delivered'}</button>
               </div>
             )}

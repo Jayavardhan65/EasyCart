@@ -17,18 +17,25 @@ const getUserId = (req) => {
 }
 
 const STATUS_CONTENT = {
+  'Accepted': {
+    emoji: '✅',
+    subject: 'Your EasyCart order has been accepted!',
+    heading: 'Order accepted by shopkeeper!',
+    message: 'Your order has been accepted and is being prepared.',
+    color: '#f97316'
+  },
   'Shipped': {
     emoji: '📦',
-    subject: 'Your EasyCart order has been shipped!',
-    heading: 'Your order is on its way!',
-    message: 'Great news! Your order has been packed and handed over to our delivery partner.',
+    subject: 'Your EasyCart order has been packed!',
+    heading: 'Your order is packed and ready!',
+    message: 'Great news! Your order has been packed and is waiting for pickup.',
     color: '#7c3aed'
   },
   'Out for Delivery': {
     emoji: '🚚',
     subject: 'Your EasyCart order is out for delivery!',
     heading: 'Out for delivery today!',
-    message: 'Your order is out for delivery and will reach you today. Please keep your phone handy.',
+    message: 'Your order is out for delivery and will reach you today.',
     color: '#2563eb'
   },
   'Delivered': {
@@ -43,13 +50,9 @@ const STATUS_CONTENT = {
 const sendStatusEmail = async (order, status) => {
   const c = STATUS_CONTENT[status]
   if (!c || !order.shipping?.email) return
-  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+  await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'api-key': process.env.BREVO_API_KEY,
-      'content-type': 'application/json'
-    },
+    headers: { 'accept': 'application/json', 'api-key': process.env.BREVO_API_KEY, 'content-type': 'application/json' },
     body: JSON.stringify({
       sender: { name: 'EasyCart', email: process.env.EMAIL_USER },
       to: [{ email: order.shipping.email }],
@@ -72,23 +75,17 @@ const sendStatusEmail = async (order, status) => {
         <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:20px">Thank you for shopping with EasyCart</p>
       </div>`
     })
-  })
-  if (!response.ok) {
-    const err = await response.json()
-    throw new Error(err.message || 'Email send failed')
-  }
+  }).catch(e => console.log('Email failed:', e.message))
 }
 
-// My orders — must be before GET /
+// My orders
 router.get('/my', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]
     if (!token) return res.status(401).json({ message: 'Not authenticated' })
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const userId = decoded.id
-    const userEmail = decoded.email
     const orders = await Order.find({
-      $or: [{ userId }, { 'shipping.email': userEmail }]
+      $or: [{ userId: decoded.id }, { 'shipping.email': decoded.email }]
     }).sort({ createdAt: -1 })
     res.json(orders)
   } catch (err) {
@@ -96,7 +93,7 @@ router.get('/my', async (req, res) => {
   }
 })
 
-// Admin — all orders
+// All orders (admin/delivery)
 router.get('/', async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 })
@@ -113,9 +110,7 @@ router.post('/', async (req, res) => {
     for (const item of items) {
       const product = await Product.findById(item._id)
       if (!product) return res.status(404).json({ message: `Product "${item.name}" not found` })
-      if (product.stock < item.quantity) {
-        return res.status(400).json({ message: `Only ${product.stock} left in stock for "${item.name}"` })
-      }
+      if (product.stock < item.quantity) return res.status(400).json({ message: `Only ${product.stock} left for "${item.name}"` })
     }
     for (const item of items) {
       await Product.findByIdAndUpdate(item._id, { $inc: { stock: -item.quantity } })
@@ -130,7 +125,42 @@ router.post('/', async (req, res) => {
   }
 })
 
-// Update order status
+// Shopkeeper accepts order — generates verification code
+router.post('/:id/accept', async (req, res) => {
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Accepted', verificationCode: code, acceptedBy: req.body.shopName || 'Shopkeeper' },
+      { new: true }
+    )
+    if (!order) return res.status(404).json({ message: 'Order not found' })
+    await sendStatusEmail(order, 'Accepted')
+    res.json({ success: true, order, verificationCode: code })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// Delivery guy verifies code to pick up
+router.post('/:id/verify-pickup', async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+    if (!order) return res.status(404).json({ message: 'Order not found' })
+    if (order.verificationCode !== req.body.code) return res.status(400).json({ message: 'Invalid verification code' })
+    const updated = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Out for Delivery', pickedUpBy: req.body.deliveryName || 'Delivery Guy' },
+      { new: true }
+    )
+    await sendStatusEmail(updated, 'Out for Delivery')
+    res.json({ success: true, order: updated })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
+// Update order status (general)
 router.put('/:id', async (req, res) => {
   try {
     const order = await Order.findByIdAndUpdate(
@@ -139,11 +169,7 @@ router.put('/:id', async (req, res) => {
       { new: true }
     )
     if (!order) return res.status(404).json({ message: 'Order not found' })
-    try {
-      await sendStatusEmail(order, req.body.status)
-    } catch (emailErr) {
-      console.log('Email send failed (non-critical):', emailErr.message)
-    }
+    await sendStatusEmail(order, req.body.status).catch(e => console.log('Email failed:', e.message))
     res.json(order)
   } catch (err) {
     res.status(500).json({ message: err.message })
