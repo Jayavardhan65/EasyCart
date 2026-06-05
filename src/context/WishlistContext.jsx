@@ -16,14 +16,19 @@ export function WishlistProvider({ children }) {
   }, [wishlist])
 
   const toggleWishlist = (product) => {
-    setWishlist(w =>
-      w.find(i => i._id === product._id)
-? (toast('Removed from wishlist', { icon: '🤍' }), w.filter(i => i._id !== product._id))
-: (toast('Added to wishlist!', { icon: '❤️' }), [...w, product])
-    )
+    setWishlist(w => {
+      const exists = w.find(i => i._id === product._id)
+      if (exists) {
+        toast('Removed from wishlist', { icon: '🤍' })
+        return w.filter(i => i._id !== product._id)
+      } else {
+        toast('Added to wishlist!', { icon: '❤️' })
+        return [...w, product]
+      }
+    })
   }
 
-  const isWishlisted = (id) => wishlist.some(i => i._id === id)
+  const isWishlisted = (productId) => wishlist.some(i => i._id === productId)
   const wishlistCount = wishlist.length
 
   return (
