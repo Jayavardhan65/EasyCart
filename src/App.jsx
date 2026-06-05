@@ -17,6 +17,7 @@ import NotFound from './pages/NotFound'
 import OrderConfirmation from './pages/OrderConfirmation'
 import Search from './pages/Search'
 import Wishlist from './pages/Wishlist'
+import Delivery from './pages/Delivery'
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/shopkeeper" element={<Shopkeeper />} />
+        <Route path="/delivery" element={<Delivery />} />
         <Route path="/*" element={
           <>
             <Navbar />
