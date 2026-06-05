@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 
 const WishlistContext = createContext()
 
@@ -17,8 +18,8 @@ export function WishlistProvider({ children }) {
   const toggleWishlist = (product) => {
     setWishlist(w =>
       w.find(i => i._id === product._id)
-        ? w.filter(i => i._id !== product._id)
-        : [...w, product]
+? (toast('Removed from wishlist', { icon: '🤍' }), w.filter(i => i._id !== product._id))
+: (toast('Added to wishlist!', { icon: '❤️' }), [...w, product])
     )
   }
 

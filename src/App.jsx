@@ -12,6 +12,7 @@ import Shopkeeper from './pages/Shopkeeper'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
 import BottomNav from './components/BottomNav'
+import { Toaster } from 'react-hot-toast'
 import NotFound from './pages/NotFound'
 import OrderConfirmation from './pages/OrderConfirmation'
 import Search from './pages/Search'
@@ -20,6 +21,7 @@ import Wishlist from './pages/Wishlist'
 export default function App() {
   return (
     <ErrorBoundary>
+      <Toaster position="bottom-center" toastOptions={{ duration: 2000, style: { background: "#1f2937", color: "#fff", fontWeight: 600, fontSize: "0.875rem" } }} />
     <BrowserRouter>
       <Routes>
         <Route path="/shopkeeper" element={<Shopkeeper />} />

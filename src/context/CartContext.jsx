@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 
 const CartContext = createContext()
 
@@ -23,12 +24,13 @@ export function CartProvider({ children }) {
         if (existing.quantity >= (product.stock ?? 99)) return c
         return c.map(i => i._id === product._id ? { ...i, quantity: i.quantity + 1 } : i)
       }
+      toast('🛒 ' + product.name + ' added to cart!')
       return [...c, { ...product, quantity: 1 }]
     })
   }
 
-  const removeFromCart = (id) =>
-    setCart(c => c.filter(i => i._id !== id))
+  const removeFromCart = (id) => { toast('Removed from cart', { icon: '🗑️' }); return
+    setCart(c => c.filter(i => i._id !== id)); }
 
   const changeQty = (id, delta) =>
     setCart(c => c.map(i => {
