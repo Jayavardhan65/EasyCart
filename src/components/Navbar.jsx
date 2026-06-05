@@ -79,11 +79,21 @@ export default function Navbar() {
                       <p className="text-xs text-gray-400">Signed in as</p>
                       <p className="text-sm text-white font-semibold truncate">{user.name}</p>
                     </div>
+                    <button onClick={() => { navigate('/orders'); setDropdownOpen(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">
+                      <span>📦</span> My Orders
+                    </button>
+                    <button onClick={() => { navigate('/addresses'); setDropdownOpen(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">
+                      <span>📍</span> My Addresses
+                    </button>
+                    <button onClick={() => { navigate('/wishlist'); setDropdownOpen(false) }} className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">
+                      <span>❤️</span> Wishlist
+                    </button>
+                    <div className="border-t border-gray-600 my-1" />
                     <button
                       onClick={() => { logout(); navigate('/'); setDropdownOpen(false) }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
+                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors flex items-center gap-2"
                     >
-                      Logout
+                      <span>🚪</span> Logout
                     </button>
                   </div>
                 )}
