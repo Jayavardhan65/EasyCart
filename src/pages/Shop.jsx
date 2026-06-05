@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { Helmet } from 'react-helmet-async'
 import SearchBar from '../components/SearchBar'
 import { useProducts } from '../context/ProductContext'
 import ProductCard from '../components/ProductCard'
@@ -59,6 +60,12 @@ export default function Shop() {
 
   return (
     <div id="main-content" className="bg-gray-100 min-h-screen">
+      <Helmet>
+        <title>EasyCart — Shop Online</title>
+        <meta name="description" content="Browse and buy electronics, fashion, home goods, books, and sports equipment at the best prices on EasyCart." />
+        <meta property="og:title" content="EasyCart — Shop Online" />
+        <meta property="og:description" content="Browse and buy electronics, fashion, home goods, books, and sports equipment at the best prices on EasyCart." />
+      </Helmet>
       {/* Hero */}
       <div className="bg-gray-800 text-white text-center py-10 sm:py-16 px-4">
         <span className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">Free shipping over ₹499</span>

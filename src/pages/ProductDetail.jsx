@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { useState } from 'react'
 import { useProducts } from '../context/ProductContext'
 import { useCart } from '../context/CartContext'
@@ -45,9 +46,25 @@ export default function ProductDetail() {
     return <span className="text-xs font-bold text-green-600 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full">✓ In Stock ({product.stock})</span>
   }
 
+  const metaDesc = description + ' Buy ' + product.name + ' online at EasyCart for just ₹' + product.price.toLocaleString() + '.'
+  const metaImage = product.images?.[0] || ''
+
   return (
     <div className="min-h-screen bg-gray-100 py-6 px-4">
       <div className="max-w-4xl mx-auto">
+        <Helmet>
+          <title>{product.name} — EasyCart</title>
+          <meta name="description" content={metaDesc} />
+          <meta property="og:title" content={product.name + ' — EasyCart'} />
+          <meta property="og:description" content={metaDesc} />
+          <meta property="og:type" content="product" />
+          {metaImage && <meta property="og:image" content={metaImage} />}
+          <meta property="og:url" content={window.location.href} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={product.name + ' — EasyCart'} />
+          <meta name="twitter:description" content={metaDesc} />
+          {metaImage && <meta name="twitter:image" content={metaImage} />}
+        </Helmet>
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-400 mb-4">
           <button onClick={() => navigate('/')} className="hover:text-orange-500 transition-colors">Home</button>
