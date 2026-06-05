@@ -19,14 +19,19 @@ export default function Delivery() {
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', zone: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [deliveryGuy, setDeliveryGuy] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('delivery_guy') || 'null') } catch { return null }
-  })
+  const [deliveryGuy, setDeliveryGuy] = useState(null)
   const [orders, setOrders] = useState([])
   const [ordersLoading, setOrdersLoading] = useState(false)
   const [filter, setFilter] = useState('active')
   const [updating, setUpdating] = useState(null)
   const [expandedOrder, setExpandedOrder] = useState(null)
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('delivery_guy')
+      if (saved) setDeliveryGuy(JSON.parse(saved))
+    } catch { }
+  }, [])
 
   useEffect(() => {
     if (!deliveryGuy) return
