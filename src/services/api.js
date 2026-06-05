@@ -95,9 +95,6 @@ export const deleteShopkeeper = (id) =>
 export const acceptOrder = (id, shopName) =>
   fetch(`${BASE}/orders/${id}/accept`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopName }) }).then(r => r.json())
 
-export const acceptOrder = (id, shopName) =>
-  fetch(`${BASE}/orders/${id}/accept`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ shopName }) }).then(r => r.json())
-
 export const verifyPickup = (id, code, deliveryName) =>
   fetch(`${BASE}/orders/${id}/verify-pickup`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, deliveryName }) }).then(r => r.json())
 
