@@ -29,8 +29,9 @@ export function CartProvider({ children }) {
     })
   }
 
-  const removeFromCart = (id) => { toast('Removed from cart', { icon: '🗑️' }); return
-    setCart(c => c.filter(i => i._id !== id)); }
+  const removeFromCart = (id) => {
+    setCart(c => c.filter(i => i._id !== id))
+  }
 
   const changeQty = (id, delta) =>
     setCart(c => c.map(i => {
@@ -42,7 +43,6 @@ export function CartProvider({ children }) {
     }).filter(Boolean))
 
   const clearCart = () => setCart([])
-
   const cartCount = cart.reduce((a, i) => a + i.quantity, 0)
 
   return (
