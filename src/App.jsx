@@ -19,6 +19,7 @@ import Search from './pages/Search'
 import Wishlist from './pages/Wishlist'
 import Delivery from './pages/Delivery'
 import Addresses from './pages/Addresses'
+import Profile from './pages/Profile'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/shopkeeper" element={<Shopkeeper />} />
         <Route path="/delivery" element={<Delivery />} />
         <Route path="/addresses" element={<Addresses />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/*" element={
           <>
             <Navbar />
