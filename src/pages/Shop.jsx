@@ -125,7 +125,6 @@ export default function Shop() {
               <span>₹{(priceMax || 10000).toLocaleString()}</span>
             </div>
           </div>
-          </div>
 
           {/* Clear filters */}
           {hasActiveFilters && (
