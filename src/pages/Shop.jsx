@@ -101,18 +101,30 @@ export default function Shop() {
           </div>
 
           {/* Row 3: price range */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-500 font-medium whitespace-nowrap">Max Price: <span className="text-orange-500 font-bold">₹{maxPrice.toLocaleString()}</span></span>
-            <input
-              type="range"
-              min={100}
-              max={priceMax || 10000}
-              step={100}
-              value={maxPrice}
-              onChange={e => setMaxPrice(Number(e.target.value))}
-              className="flex-1 accent-orange-500"
-            />
-            <span className="text-xs text-gray-400 whitespace-nowrap">₹{(priceMax || 10000).toLocaleString()}</span>
+          <div className="flex flex-col gap-1.5 w-full">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 font-medium">Max Price</span>
+              <span className="text-xs font-bold text-orange-500 bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full">₹{maxPrice.toLocaleString()}</span>
+            </div>
+            <div className="relative w-full h-5 flex items-center">
+              <div className="absolute w-full h-1.5 bg-gray-200 rounded-full" />
+              <div className="absolute h-1.5 bg-orange-400 rounded-full" style={{width: `${((maxPrice - 100) / ((priceMax || 10000) - 100)) * 100}%`}} />
+              <input
+                type="range"
+                min={100}
+                max={priceMax || 10000}
+                step={100}
+                value={maxPrice}
+                onChange={e => setMaxPrice(Number(e.target.value))}
+                className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="absolute w-4 h-4 bg-white border-2 border-orange-500 rounded-full shadow-sm pointer-events-none" style={{left: `calc(${((maxPrice - 100) / ((priceMax || 10000) - 100)) * 100}% - 8px)`}} />
+            </div>
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>₹100</span>
+              <span>₹{(priceMax || 10000).toLocaleString()}</span>
+            </div>
+          </div>
           </div>
 
           {/* Clear filters */}
