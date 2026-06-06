@@ -114,6 +114,7 @@ export default function Shop() {
               value={maxPrice}
               onChange={e => setMaxPrice(Number(e.target.value))}
               className="price-slider w-full"
+              style={{background: `linear-gradient(to right, #f97316 0%, #f97316 ${((maxPrice - 100) / ((priceMax || 10000) - 100)) * 100}%, #e5e7eb ${((maxPrice - 100) / ((priceMax || 10000) - 100)) * 100}%, #e5e7eb 100%)`}}
             />
             <div className="flex justify-between text-xs text-gray-400 mt-0.5">
               <span>₹100</span>
