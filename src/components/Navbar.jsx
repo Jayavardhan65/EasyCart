@@ -136,8 +136,16 @@ export default function Navbar() {
             {navLink('/contact', 'Contact')}
             {user ? (
               <>
-                <span className="text-sm text-gray-400 px-3 py-2">👤 {user.name}</span>
-                <button onClick={() => { logout(); navigate('/'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-gray-300 hover:text-white hover:bg-white/10 transition-colors">Logout</button>
+                <div className="px-3 py-2 border-t border-gray-700 mt-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">{user.name.charAt(0).toUpperCase()}</span>
+                    <div><p className="text-xs text-gray-400">Signed in as</p><p className="text-sm text-white font-semibold">{user.name}</p></div>
+                  </div>
+                </div>
+                <button onClick={() => { navigate('/orders'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">📦 My Orders</button>
+                <button onClick={() => { navigate('/addresses'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">📍 My Addresses</button>
+                <button onClick={() => { navigate('/wishlist'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-2">❤️ Wishlist</button>
+                <button onClick={() => { logout(); navigate('/'); setMenuOpen(false) }} className="text-sm font-semibold px-3 py-2 rounded-md text-left text-red-400 hover:text-red-300 hover:bg-white/10 transition-colors flex items-center gap-2">🚪 Logout</button>
               </>
             ) : navLink('/login', 'Login')}
           </div>
