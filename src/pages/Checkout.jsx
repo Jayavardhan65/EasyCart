@@ -20,6 +20,10 @@ export default function Checkout() {
   const [error, setError] = useState('')
   const [addrLoading, setAddrLoading] = useState(true)
 
+  useEffect(() => {
+    if (!user) navigate('/login', { state: { from: '/checkout' } })
+  }, [user])
+
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0)
   const shipping = subtotal >= 499 ? 0 : 49
   const total = subtotal + shipping

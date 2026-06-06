@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { loginUser, registerUser, verifyOTP } from '../services/api'
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from || '/'
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [otp, setOtp] = useState('')
@@ -30,7 +32,7 @@ export default function Login() {
     setLoading(true); setError('')
     const res = await loginUser(form.email, form.password)
     setLoading(false)
-    if (res.success) { login(res.user, res.token); navigate('/') }
+    if (res.success) { login(res.user, res.token); navigate(from) }
     else setError(res.message || 'Login failed')
   }
 
@@ -50,7 +52,7 @@ export default function Login() {
     setLoading(true); setError('')
     const res = await verifyOTP(form.email, otp)
     setLoading(false)
-    if (res.success) { login(res.user, res.token); navigate('/') }
+    if (res.success) { login(res.user, res.token); navigate(from) }
     else setError(res.message || 'Invalid OTP')
   }
 
