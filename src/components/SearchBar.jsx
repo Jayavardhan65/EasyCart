@@ -72,7 +72,7 @@ export default function SearchBar({ products, value, onChange }) {
           aria-label="Search products"
           aria-autocomplete="list"
           aria-expanded={open}
-          className="border border-gray-200 rounded-lg pl-9 pr-8 py-2 text-sm outline-none focus:border-orange-400 w-full"
+          className="border border-gray-200 rounded-lg pl-9 pr-8 py-2 text-sm outline-none focus:border-orange-400 w-full text-gray-800 bg-white"
         />
         {value && (
           <button onClick={() => { onChange(''); setOpen(false) }} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
